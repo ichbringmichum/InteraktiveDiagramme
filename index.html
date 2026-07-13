@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Viktorias interaktives Diagramm</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #fff9db;
+            color: #2c2c2c;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .section {
+            background: white;
+            border-radius: 14px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            color: #2c2c2c;
+        }
+        .plot-container {
+            width: 100%;
+            height: 600px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        button {
+            background-color: #f6d77e;
+            color: #2c2c2c;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #e8c76b;
+        }
+        .button-group {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .info {
+            background-color: #fff7cc;
+            border-left: 4px solid #f6d77e;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        hr {
+            border: none;
+            border-top: 2px solid #e1d69d;
+            margin: 40px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Viktorias interaktives Diagramm</h1>
+        <p class="subtitle">
+            Diese App erstellt aus deinen Daten ein Ternärdiagramm für Olivin/Opx/Cpx, einen 
+            Scatterplot für SiO2 vs. MgO und einen interaktiven Spidergramm-Plot.
+        </p>
+
+        <!-- Ternary Diagram Section -->
+        <div class="section">
+            <h2>🔺 Ternärdiagramm: Ol-Opx-Cpx</h2>
+            <div class="button-group">
+                <button onclick="loadTernaryExample()">📌 Beispieldaten laden</button>
+            </div>
+            <div class="plot-container" id="ternary-plot"></div>
+            <p style="margin-top: 15px; color: #666; font-size: 0.9em;">
+                <strong>Klassifikation:</strong> <span id="ternary-classification">Warte auf Daten...</span>
+            </p>
+        </div>
+
+        <hr>
+
+        <!-- Scatter Plot Section -->
+        <div class="section">
+            <h2>📈 SiO2 vs. MgO</h2>
+            <div class="button-group">
+                <button onclick="loadScatterExample()">📌 Beispieldaten laden</button>
+                <button onclick="toggleTrendline()">📊 Trendlinie <span id="trend-toggle">An</span></button>
+            </div>
+            <div class="plot-container" id="scatter-plot"></div>
+        </div>
+
+        <hr>
+
+        <!-- Spidergram Section -->
+        <div class="section">
+            <h2>🕷️ SEE-Spidergramm</h2>
+            <div class="button-group">
+                <button onclick="loadSpidergamExample()">📌 Beispieldaten laden</button>
+            </div>
+            <div class="plot-container" id="spidergram-plot"></div>
+        </div>
+
+        <div class="info">
+            💡 <strong>Tipp:</strong> Klicke auf die Beispieldaten-Buttons, um die Diagramme zu sehen. 
+            Die Plots sind vollständig interaktiv - zoomen, verschieben und Hover-Informationen funktionieren!
+        </div>
+    </div>
+
+    <script>
+        let showTrendline = false;
+
+        // Ternary Plot Example
+        function loadTernaryExample() {
+            const data = [{
+                type: 'scatterternary',
+                mode: 'markers',
+                a: [60, 20, 10, 40],
+                b: [30, 70, 20, 30],
+                c: [10, 10, 70, 30],
+                text: ['Sample 1', 'Sample 2', 'Sample 3', 'Sample 4'],
+                marker: {
+                    symbol: 'circle',
+                    size: 12,
+                    opacity: 0.8,
+                    line: { width: 1, color: 'DarkSlateGrey' }
+                },
+                hovertemplate: '<b>%{text}</b><br>Ol: %{a:.1f}%<br>Opx: %{b:.1f}%<br>Cpx: %{c:.1f}%<extra></extra>'
+            }];
+
+            const layout = {
+                title: 'Ternärdiagramm: Olivin – Orthopyroxen – Klinopyroxen',
+                ternary: {
+                    sum: 100,
+                    aaxis: { title: 'Olivin (Ol)', min: 0 },
+                    baxis: { title: 'Orthopyroxen (Opx)', min: 0 },
+                    caxis: { title: 'Klinopyroxen (Cpx)', min: 0 }
+                },
+                margin: { l: 50, r: 50, t: 80, b: 50 }
+            };
+
+            Plotly.newPlot('ternary-plot', data, layout, { responsive: true });
+            document.getElementById('ternary-classification').innerText = 'Peridotit (gemischte Zusammensetzung)';
+        }
+
+        // Scatter Plot Example
+        function loadScatterExample() {
+            const x = [45, 50, 55, 60, 65, 70];
+            const y = [12, 10, 8, 6, 4, 3];
+
+            const data = [{
+                x: x,
+                y: y,
+                mode: 'markers',
+                type: 'scatter',
+                marker: { size: 8, color: '#f6d77e' },
+                name: 'Daten',
+                hovertemplate: 'SiO2: %{x:.1f}%<br>MgO: %{y:.1f}%<extra></extra>'
+            }];
+
+            // Add trendline if enabled
+            if (showTrendline) {
+                const slope = -0.2;
+                const intercept = 21;
+                const xLine = [45, 70];
+                const yLine = [slope * 45 + intercept, slope * 70 + intercept];
+                data.push({
+                    x: xLine,
+                    y: yLine,
+                    mode: 'lines',
+                    name: 'Trendlinie',
+                    line: { color: 'red', width: 2 },
+                    hovertemplate: '%{x:.1f}, %{y:.1f}<extra></extra>'
+                });
+            }
+
+            const layout = {
+                title: 'SiO2 vs. MgO',
+                xaxis: { title: 'SiO2 (wt%)', showgrid: true },
+                yaxis: { title: 'MgO (wt%)', showgrid: true },
+                margin: { l: 60, r: 40, t: 80, b: 60 }
+            };
+
+            Plotly.newPlot('scatter-plot', data, layout, { responsive: true });
+        }
+
+        // Spidergram Example
+        function loadSpidergamExample() {
+            const oxides = ['SiO2', 'TiO2', 'Al2O3', 'FeO', 'MgO', 'CaO', 'Na2O', 'K2O'];
+            const values = [50, 1.2, 15, 8, 10, 7, 4, 0.5];
+
+            const data = [{
+                type: 'scatterpolar',
+                r: [...values, values[0]],
+                theta: [...oxides, oxides[0]],
+                fill: 'toself',
+                name: 'Beispielgesteinsprobe',
+                line: { color: '#f6d77e' },
+                fillcolor: 'rgba(246, 215, 126, 0.3)',
+                hovertemplate: '%{theta}: %{r:.2f}%<extra></extra>'
+            }];
+
+            const layout = {
+                title: 'SEE-Spidergramm: Elementverteilungen',
+                polar: {
+                    radialaxis: {
+                        showline: true,
+                        linewidth: 1,
+                        showgrid: true,
+                        gridcolor: '#e1d69d'
+                    },
+                    angularaxis: {
+                        rotation: 90,
+                        direction: 'clockwise'
+                    }
+                },
+                margin: { l: 60, r: 60, t: 80, b: 60 }
+            };
+
+            Plotly.newPlot('spidergram-plot', data, layout, { responsive: true });
+        }
+
+        function toggleTrendline() {
+            showTrendline = !showTrendline;
+            document.getElementById('trend-toggle').innerText = showTrendline ? 'Aus' : 'An';
+            loadScatterExample();
+        }
+
+        // Load example on page load
+        window.addEventListener('load', () => {
+            loadTernaryExample();
+            loadScatterExample();
+            loadSpidergamExample();
+        });
+    </script>
+</body>
+</html>
